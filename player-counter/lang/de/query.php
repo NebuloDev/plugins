@@ -34,7 +34,7 @@ return [
     'table' => [
         'no_players' => ' Keine Spieler gefunden',
         'no_players_description' => 'Entweder sind keine Spieler online oder die Query ist auf diesem Server deaktiviert',
-        'server_offline' => 'Server ist offline',
+        'server_not_running' => 'Server ist nicht an',
     ],
 
     'notifications' => [

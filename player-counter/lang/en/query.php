@@ -34,7 +34,7 @@ return [
     'table' => [
         'no_players' => 'No players found',
         'no_players_description' => 'Either no players are online or query is disabled on this server',
-        'server_offline' => 'Server is offline',
+        'server_not_running' => 'Server not running',
     ],
 
     'notifications' => [

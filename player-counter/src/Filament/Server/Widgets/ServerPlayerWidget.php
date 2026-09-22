@@ -2,6 +2,7 @@
 
 namespace Boy132\PlayerCounter\Filament\Server\Widgets;
 
+use App\Enums\ContainerStatus;
 use App\Filament\Server\Components\SmallStatBlock;
 use App\Models\Server;
 use Boy132\PlayerCounter\Models\GameQuery;
@@ -26,17 +27,17 @@ class ServerPlayerWidget extends StatsOverviewWidget
         }
 
         // @phpstan-ignore method.notFound
-        if (!$server->egg->gameQuery()->exists()) {
-            return false;
-        }
-
-        return !$server->retrieveStatus()->isOffline();
+        return $server->egg->gameQuery()->exists();
     }
 
     protected function getStats(): array
     {
         /** @var Server $server */
         $server = Filament::getTenant();
+
+        if ($server->retrieveStatus() !== ContainerStatus::Running) {
+            return [];
+        }
 
         /** @var ?GameQuery $gameQuery */
         $gameQuery = $server->egg->gameQuery; // @phpstan-ignore property.notFound

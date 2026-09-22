@@ -34,7 +34,7 @@ return [
     'table' => [
         'no_players' => 'Игроки не найдены',
         'no_players_description' => 'Либо на сервере никого нет, либо на нём отключён query',
-        'server_offline' => 'Сервер не в сети',
+        'server_not_running' => 'Сервер не работает',
     ],
 
     'notifications' => [

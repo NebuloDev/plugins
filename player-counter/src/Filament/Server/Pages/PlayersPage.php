@@ -2,6 +2,7 @@
 
 namespace Boy132\PlayerCounter\Filament\Server\Pages;
 
+use App\Enums\ContainerStatus;
 use App\Models\Server;
 use App\Repositories\Daemon\DaemonFileRepository;
 use App\Traits\Filament\BlockAccessInConflict;
@@ -130,7 +131,7 @@ class PlayersPage extends Page implements HasTable
 
         $this->players = [];
 
-        if ($gameQuery) {
+        if ($gameQuery && $server->retrieveStatus() === ContainerStatus::Running) {
             $data = $gameQuery->runQuery($server);
 
             if ($data) {
@@ -322,8 +323,8 @@ class PlayersPage extends Page implements HasTable
                 /** @var Server $server */
                 $server = Filament::getTenant();
 
-                if ($server->retrieveStatus()->isOffline()) {
-                    return trans('player-counter::query.table.server_offline');
+                if ($server->retrieveStatus() !== ContainerStatus::Running) {
+                    return trans('player-counter::query.table.server_not_running');
                 }
 
                 return trans('player-counter::query.table.no_players');
@@ -336,7 +337,7 @@ class PlayersPage extends Page implements HasTable
                 /** @var Server $server */
                 $server = Filament::getTenant();
 
-                if ($server->retrieveStatus()->isOffline()) {
+                if ($server->retrieveStatus() !== ContainerStatus::Running) {
                     return null;
                 }
 

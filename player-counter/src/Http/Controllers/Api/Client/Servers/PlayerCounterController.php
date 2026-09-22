@@ -2,6 +2,7 @@
 
 namespace Boy132\PlayerCounter\Http\Controllers\Api\Client\Servers;
 
+use App\Enums\ContainerStatus;
 use App\Http\Controllers\Api\Client\ClientApiController;
 use App\Models\Server;
 use Boy132\PlayerCounter\Models\GameQuery;
@@ -55,15 +56,15 @@ class PlayerCounterController extends ClientApiController
             abort(Response::HTTP_NOT_ACCEPTABLE, 'Server has invalid allocation');
         }
 
-        if ($server->retrieveStatus()->isOffline()) {
-            abort(Response::HTTP_NOT_ACCEPTABLE, 'Server is offline');
-        }
-
         /** @var ?GameQuery $gameQuery */
         $gameQuery = $server->egg->gameQuery; // @phpstan-ignore property.notFound
 
         if (!$gameQuery) {
             abort(Response::HTTP_NOT_ACCEPTABLE, 'Server has no query');
+        }
+
+        if ($server->retrieveStatus() !== ContainerStatus::Running) {
+            abort(Response::HTTP_NOT_ACCEPTABLE, 'Server is not running');
         }
 
         return $gameQuery->runQuery($server);
