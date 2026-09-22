@@ -25,6 +25,15 @@ class MinecraftModrinthService
 
     public function getMinecraftVersion(Server $server): ?string
     {
+        $server->loadMissing('egg');
+
+        $tags = $server->egg->tags ?? [];
+
+        // Proxies are not tied to a specific minecraft version
+        if (in_array('proxy', $tags)) {
+            return null;
+        }
+
         $version = $server->variables()->where(fn ($builder) => $builder->where('env_variable', 'MINECRAFT_VERSION')->orWhere('env_variable', 'MC_VERSION'))->first()?->server_value;
 
         if (!$version || $version === 'latest') {
@@ -120,10 +129,18 @@ class MinecraftModrinthService
         $minecraftVersion = $this->getMinecraftVersion($server);
         $minecraftLoader = $minecraftLoader['name'];
 
+        $facets = '[["categories:' . $minecraftLoader . '"]';
+
+        if ($minecraftVersion) {
+            $facets .= ',["versions:' . $minecraftVersion . '"]]';
+        }
+
+        $facets .= ',["project_type:mod","project_type:plugin"]]';
+
         $data = [
             'offset' => ($page - 1) * 20,
             'limit' => 20,
-            'facets' => "[[\"categories:$minecraftLoader\"],[\"versions:$minecraftVersion\"],[\"project_type:{$modrinthProjectType}\"]]",
+            'facets' => $facets,
         ];
 
         $key = "modrinth_projects:{$modrinthProjectType}:$minecraftVersion:$minecraftLoader:$page";
@@ -261,13 +278,18 @@ class MinecraftModrinthService
         return "modrinth_versions:$projectId:$minecraftVersion:$minecraftLoader";
     }
 
-    /** @return array{game_versions: string, loaders: string} */
+    /** @return array<string, string> */
     protected function getVersionsQuery(?string $minecraftVersion, string $minecraftLoader): array
     {
-        return [
-            'game_versions' => "[\"$minecraftVersion\"]",
-            'loaders' => "[\"$minecraftLoader\"]",
+        $query = [
+            'loaders' => '["' . $minecraftLoader . '"]',
         ];
+
+        if ($minecraftVersion) {
+            $query['game_versions'] = '["' . $minecraftVersion . '"]';
+        }
+
+        return $query;
     }
 
     /** @param  array<int, mixed>  $versions */
@@ -350,7 +372,6 @@ class MinecraftModrinthService
 
         $minecraftVersion = $this->getMinecraftVersion($server);
         $minecraftLoader = $minecraftLoader['name'];
-        $query = $this->getVersionsQuery($minecraftVersion, $minecraftLoader);
 
         $results = [];
         $missing = [];
@@ -375,7 +396,7 @@ class MinecraftModrinthService
                     ->asJson()
                     ->timeout(10)
                     ->connectTimeout(5)
-                    ->get("https://api.modrinth.com/v2/project/$projectId/version", $query),
+                    ->get("https://api.modrinth.com/v2/project/$projectId/version", $this->getVersionsQuery($minecraftVersion, $minecraftLoader)),
                 $missing
             ));
         } catch (Exception $exception) {
