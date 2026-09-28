@@ -132,7 +132,7 @@ class MinecraftModrinthService
         $facets = '[["categories:' . $minecraftLoader . '"]';
 
         if ($minecraftVersion) {
-            $facets .= ',["versions:' . $minecraftVersion . '"]]';
+            $facets .= ',["versions:' . $minecraftVersion . '"]';
         }
 
         $facets .= ',["project_type:mod","project_type:plugin"]]';
